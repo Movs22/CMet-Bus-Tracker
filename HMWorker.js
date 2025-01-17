@@ -52,6 +52,7 @@ const vehicleManager = {
     flush(shiftId) {
         parentPort.postMessage({ type: 'log', data: "FLUSHING " + shiftId });
         let shift = this.shifts.get(shiftId);
+        if(!shift) return parentPort.postMessage({ type: 'log', data: "ERROR: " + shiftId + " is unknown?" });
         let data = shift.data[0]
         shift.data = [];
         this.shifts.set(shiftId, shift);
