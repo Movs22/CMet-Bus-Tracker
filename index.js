@@ -65,7 +65,7 @@ app.all("*", (_, s, next) => {
     next()
 })
 
-app.use('/sandbox', require("./sandbox")(date));
+app.use('/sandbox', require("./sandbox")(date, CMetropolitana.stops.cache));
 
 app.get("/ping", (_, s) => s.sendStatus(200));
 app.get("/ready", (_, s) => (ready ? s.sendStatus(200) : s.sendStatus(404)));

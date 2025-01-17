@@ -4,9 +4,7 @@ const fs = require("fs");
 const cors = require("cors")
 const DB = require("./database")
 
-let stops = new DB("./data/stops.json")
-
-module.exports = (date) => {
+module.exports = (date, stops) => {
     router.use(cors({
         origin: '*',
         methods: ['GET', 'POST'],

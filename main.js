@@ -79,7 +79,7 @@ app.get("/pull", (_, s) => {
     console.log("Shutting down server.js module...")
     console.log("Pulling from github...")
     exec("chmod +x pull.sh")
-    let pull = spawn("git", ["pull", "git@github.com:Horarios-LX/Backend-Server.git"])
+    let pull = spawn("git", ["pull", "git@github.com:Movs22/CMet-Bus-Tracker.git"])
     pull.stderr.on("data", (d) => console.log("[GitHub ERR] " + d))
     pull.stdout.on("data", (d) => console.log("[GitHub INFO] " + d))
     pull.stdout.on("close", () => {
