@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const fs = require("fs");
 const cors = require("cors")
-const DB = require("./database");
 const database = require('./database');
 
 const stops = new database("./data/stops.json");
@@ -20,6 +18,11 @@ module.exports = () => {
         if (req.get("Origin") !== "https://hlx-sandbox.github.io/" && !req.ip === "::1") return res.sendStatus(401)
         next();
     })
+
+    router.get("/editor/stops/list/:id", async (r, s) => {
+        if(!stops.read(r.params.id)) return s.json([]);
+        return s.json(stops.read(r.params.id))
+    });
 
     router.get("/editor/stops/upvote/:id/:s", async (r, res) => {
         if(!stops.read(r.params.id)) return res.sendStatus(404);
