@@ -28,6 +28,19 @@ let date = (new Date(Date.now())).toLocaleDateString()
 
 let now = Math.round(Date.now() / 1000);
 
+let historyManager = require("./historyManager.js")
+
+let HM = new historyManager("./HMWorker.js", date);
+
+let errors = 0;
+
+HM.worker.on('exit', (code) => {
+    errors++;
+    if(errors > 3) return console.warn("ABORTING WORKER RESTART. TOO MANY ERRORS.")
+    console.log(`Worker exited with code ${code}`)
+    HM = new historyManager("./HMWorker.js", date);
+});
+
 async function init() {
     await CMetropolitana.lines.fetchAll();
     await CMetropolitana.routes.fetchAll();
@@ -35,9 +48,9 @@ async function init() {
     await CMetropolitana.vehicles.fetchAll().then(r => vehicles = { ...CMetropolitana.vehicles.cache._cache });
     Object.keys(vehicles).map(key => {
         newVec = vehicles[key];
-        vehicles[key] = { id: newVec.id, tripId: (newVec.timestamp - now > -15000 ? newVec.trip_id : null), stopId: newVec.stop_id, timestamp: newVec.timestamp, lat: newVec.lat, lon: newVec.lon, bearing: newVec.bearing, pattern_id: newVec.pattern_id, color: (CMetropolitana.lines.cache.get(newVec.line_id) || { color: undefined }).color };
+        vehicles[key] = { a: newVec.agency_id, id: newVec.id, tripId: (newVec.timestamp - now > -15000 ? newVec.trip_id : null), stopId: newVec.stop_id, timestamp: newVec.timestamp, lat: newVec.lat, lon: newVec.lon, bearing: newVec.bearing, speed: newVec.speed, doors: newVec.door_status, pattern_id: newVec.pattern_id, color: (CMetropolitana.lines.cache.get(newVec.line_id) || { color: undefined }).color, shiftId: newVec.shift_id };
         vehicles[key].prev_stop = null;
-        //if(newVec.timestamp - now > -15000) parsePos(newVec)
+        if(newVec.timestamp - now > -15000) HM.addVehicle(vehicles[key]);
     })
     return true;
 }
@@ -55,9 +68,13 @@ CMetropolitana.vehicles.on("vehicleUpdate", (oldVec, newVec) => {
         prevStop = (newVec.stop_id === vehicles[newVec.id].stop_id ? vehicles[newVec.id].prev_stop || null : vehicles[newVec.id].stop_id)
     }
     now = Math.round(Date.now() / 1000);
-    vehicles[newVec.id] = { prevStop: (oldVec && oldVec.stop_id !== newVec.stop_id ? oldVec.stop_id : null), id: newVec.id, tripId: (newVec.timestamp - now > -15000 ? newVec.trip_id : null), lineId: newVec.line_id, stopId: newVec.stop_id, timestamp: newVec.timestamp, lat: newVec.lat, lon: newVec.lon, bearing: newVec.bearing, pattern_id: newVec.pattern_id, color: (CMetropolitana.lines.cache.get(newVec.line_id.replaceAll("1998", "CP")) || { color: undefined }).color }
+    vehicles[newVec.id] = { a: newVec.agency_id, prevStop: (oldVec && oldVec.stop_id !== newVec.stop_id ? oldVec.stop_id : null), id: newVec.id, tripId: (newVec.timestamp - now > -15000 ? newVec.trip_id : null), lineId: newVec.line_id, stopId: newVec.stop_id, timestamp: newVec.timestamp, lat: newVec.lat, lon: newVec.lon, bearing: newVec.bearing, speed: newVec.speed, pattern_id: newVec.pattern_id, doors: newVec.door_status, color: (CMetropolitana.lines.cache.get(newVec.line_id.replaceAll("1998", "CP")) || { color: undefined }).color, shiftId: newVec.shift_id }
     if (vehicles[newVec.id].trip_id) vehicles[newVec.id].prev_stop = prevStop;
-    
+    if (newVec.timestamp - now > -15000) {
+        HM.addUpdate(vehicles[newVec.id]);
+    } else if(newVec.shiftId) {
+        HM.flush(newVec.a + "-" + vehicles[newVec.id].shiftId);
+    }
 })
 
 app.all("*", (_, s, next) => {
@@ -65,7 +82,16 @@ app.all("*", (_, s, next) => {
     next()
 })
 
-app.use('/sandbox', require("./sandbox")(date, CMetropolitana.stops.cache));
+app.get("/test", (_, s) => {
+    HM.getShifts();
+    setTimeout(() => {
+        s.json({ data: [...HM.shifts]})
+    }, 5000)
+})
+
+app.use('/sandbox', require("./sandbox")(CMetropolitana.stops.cache));
+
+app.use('/t', require("./trips")(date, HM));
 
 app.get("/ping", (_, s) => s.sendStatus(200));
 app.get("/ready", (_, s) => (ready ? s.sendStatus(200) : s.sendStatus(404)));
@@ -146,6 +172,8 @@ setTimeout(() => {
     console.log("Started fetch loop!")
     setInterval(() => {
         ready = false;
+        date = (new Date(Date.now())).toLocaleDateString();
+        HM.updateDate(date);
         init().then(r => ready = r);
     }, 24 * 60 * 60 * 1000)
 }, (new Date(now * 1000)).setHours(4) + 24 * 60 * 60 * 1000 - now * 1000)
