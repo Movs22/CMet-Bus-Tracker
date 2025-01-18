@@ -32,6 +32,11 @@ const vehicleManager = {
 
     addUpdate(vehicle) {
         if (!this.vehicleIds.has(vehicle.id) || !this.shifts.has(vehicle.a + "-" + vehicle.shiftId)) return this.addVehicle(vehicle);
+        if(this.vehicleIds.get(vehicle.id) !== vehicle.a + "-" + vehicle.shiftId) {
+            this.flush(this.vehicleIds.get(vehicle.id), vehicle.timestamp);
+            this.vehicleIds.remove(vehicle.id);
+            return this.addVehicle(vehicle);
+        }
         if (this.lastTrips.get(vehicle.id) !== vehicle.tripId) {
             let pt = this.flush(this.vehicleIds.get(vehicle.id), vehicle.timestamp);
             this.vehicleIds.set(vehicle.id, vehicle.a + "-" + vehicle.shiftId);
@@ -51,6 +56,7 @@ const vehicleManager = {
     },
 
     flush(shiftId, ts) {
+        vecId = shiftId.vehicleId;
         parentPort.postMessage({ type: 'log', data: "FLUSHING " + shiftId });
         let shift = this.shifts.get(shiftId);
         if(!shift) return parentPort.postMessage({ type: 'log', data: "ERROR: " + shiftId + " is unknown?" });
@@ -72,9 +78,9 @@ const vehicleManager = {
             fs.appendFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, "\n" + data.start + "-" + ts + "-" + data.id);
         }
         if(!fs.existsSync("./tripHistory/" + this.date + "/tripIds")) {
-            fs.writeFileSync("./tripHistory/" + this.date + "/tripIds", data.id + ">" + shiftId);
+            fs.writeFileSync("./tripHistory/" + this.date + "/tripIds", data.id + ">" + vecId + ">" + shiftId);
         } else {
-            fs.appendFileSync("./tripHistory/" + this.date + "/tripIds", "\n" + data.id + ">" + shiftId);
+            fs.appendFileSync("./tripHistory/" + this.date + "/tripIds", "\n" + data.id + ">" + vecId + ">" + shiftId);
         }
         if(!fs.existsSync("./tripHistory/" + this.date + "/vehicles")) {
             fs.writeFileSync("./tripHistory/" + this.date + "/vehicles", shift.vehicleId + ">" + shiftId);
