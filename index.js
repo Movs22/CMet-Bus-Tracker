@@ -30,16 +30,16 @@ let now = Math.round(Date.now() / 1000);
 
 let historyManager = require("./historyManager.js")
 
-let HM = new historyManager("./HMWorker.js", date);
+//let HM = new historyManager("./HMWorker.js", date);
 
 let errors = 0;
 
-HM.worker.on('exit', (code) => {
+/*HM.worker.on('exit', (code) => {
     errors++;
     if(errors > 3) return console.warn("ABORTING WORKER RESTART. TOO MANY ERRORS.")
     console.log(`Worker exited with code ${code}`)
     HM = new historyManager("./HMWorker.js", date);
-});
+});*/
 
 async function init() {
     await CMetropolitana.lines.fetchAll();
@@ -50,7 +50,7 @@ async function init() {
         newVec = vehicles[key];
         vehicles[key] = { a: newVec.agency_id, id: newVec.id, tripId: (newVec.timestamp - now > -15000 ? newVec.trip_id : null), stopId: newVec.stop_id, timestamp: newVec.timestamp, lat: newVec.lat, lon: newVec.lon, bearing: newVec.bearing, speed: newVec.speed, doors: newVec.door_status, pattern_id: newVec.pattern_id, color: (CMetropolitana.lines.cache.get(newVec.line_id) || { color: undefined }).color, shiftId: newVec.shift_id };
         vehicles[key].prev_stop = null;
-        if(newVec.timestamp - now > -15000) HM.addVehicle(vehicles[key]);
+        //if(newVec.timestamp - now > -15000) HM.addVehicle(vehicles[key]);
     })
     return true;
 }
@@ -70,11 +70,11 @@ CMetropolitana.vehicles.on("vehicleUpdate", (oldVec, newVec) => {
     now = Math.round(Date.now() / 1000);
     vehicles[newVec.id] = { a: newVec.agency_id, prevStop: (oldVec && oldVec.stop_id !== newVec.stop_id ? oldVec.stop_id : null), id: newVec.id, tripId: (newVec.timestamp - now > -15000 ? newVec.trip_id : null), lineId: newVec.line_id, stopId: newVec.stop_id, timestamp: newVec.timestamp, lat: newVec.lat, lon: newVec.lon, bearing: newVec.bearing, speed: newVec.speed, pattern_id: newVec.pattern_id, doors: newVec.door_status, color: (CMetropolitana.lines.cache.get(newVec.line_id.replaceAll("1998", "CP")) || { color: undefined }).color, shiftId: newVec.shift_id }
     if (vehicles[newVec.id].trip_id) vehicles[newVec.id].prev_stop = prevStop;
-    if (newVec.timestamp - now > -15000) {
+    /*if (newVec.timestamp - now > -15000) {
         HM.addUpdate(vehicles[newVec.id]);
     } else if(newVec.shiftId) {
         HM.flush(newVec.a + "-" + vehicles[newVec.id].shiftId, newVec.timestamp);
-    }
+    }*/
 })
 
 app.all("*", (_, s, next) => {
@@ -82,16 +82,9 @@ app.all("*", (_, s, next) => {
     next()
 })
 
-app.get("/test", (_, s) => {
-    HM.getShifts();
-    setTimeout(() => {
-        s.json({ data: [...HM.shifts]})
-    }, 5000)
-})
-
 app.use('/sandbox', require("./sandbox")(CMetropolitana.stops.cache));
 
-app.use('/t', require("./trips")(date, HM));
+//app.use('/t', require("./trips")(date, HM));
 
 app.get("/ping", (_, s) => s.sendStatus(200));
 app.get("/ready", (_, s) => (ready ? s.sendStatus(200) : s.sendStatus(404)));
@@ -101,8 +94,8 @@ app.get("/vehicles", (_, s) => {
 })
 
 process.on("exit", () => {
-    HM.flushAll();
-    HM.worker.terminate();
+    /*HM.flushAll();
+    HM.worker.terminate();*/
 })
 
 app.get("/vehicles/l/:line", async (r, s) => {
@@ -177,7 +170,7 @@ setTimeout(() => {
     setInterval(() => {
         ready = false;
         date = (new Date(Date.now())).toLocaleDateString();
-        HM.updateDate(date);
+        //HM.updateDate(date);
         init().then(r => ready = r);
     }, 24 * 60 * 60 * 1000)
 }, (new Date(now * 1000)).setHours(4) + 24 * 60 * 60 * 1000 - now * 1000)
