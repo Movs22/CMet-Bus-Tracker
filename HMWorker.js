@@ -42,7 +42,7 @@ const vehicleManager = {
         }
         let data = this.shifts.get(vehicle.a + "-" + vehicle.shiftId).data;
         if(!data) return parentPort.postMessage({ type: 'log', data: "ERROR: " + vehicle.shiftId + " has an invalid start data:" + JSON.stringify(data) });
-        let pos = vehicle.lat.toFixed(5) + "|" + vehicle.lon.toFixed(5) + "|" + vehicle.stopId + "|" + (vehicle.doors ? vehicle.doors === "OPEN" ? "1" : "0" : "-1") + "|" + (vehicle.timestamp - data.start) + "@";
+        let pos = vehicle.lat.toFixed(5) + "|" + vehicle.lon.toFixed(5) + "|" + vehicle.stopId + "|" + (vehicle.doors ? vehicle.doors === "OPEN" ? "1" : "0" : "-1") + "|" + (now - data.start) + "@";
         data.pos += pos;
     },
 
