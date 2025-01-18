@@ -64,7 +64,7 @@ const vehicleManager = {
         if(!fs.existsSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId)) {
             fs.writeFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, shift.vehicleId + "<" + shift.start + "\n§" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
         } else {
-            fs.appendFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, "\n$" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
+            fs.appendFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, "\n§" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
         }
         if(!fs.existsSync("./tripHistory/" + this.date + "/shifts/" + shiftId)) {
             fs.writeFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, data.start + "-" + ts + "-" + data.id);
