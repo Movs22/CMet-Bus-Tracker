@@ -37,6 +37,10 @@ class historyManager {
         this.worker.postMessage({ type: 'shifts' });
     }
 
+    flushAll() {
+        this.worker.postMessage({ type: 'flushAll' });
+    }
+
     updateDate(date) {
         this.worker.postMessage({ type: 'date', date });
     }

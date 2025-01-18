@@ -100,6 +100,10 @@ app.get("/vehicles", (_, s) => {
     return s.json(!ready ? {} : Object.values(vehicles))
 })
 
+process.on("exit", () => {
+    HM.flushAll();
+    HM.worker.terminate();
+})
 
 app.get("/vehicles/l/:line", async (r, s) => {
     return s.json(!ready ? {} : Object.values(vehicles).filter(a => a.tripId && a.tripId.startsWith(r.params.line)))
