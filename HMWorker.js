@@ -33,7 +33,7 @@ const vehicleManager = {
     addUpdate(vehicle) {
         if (!this.vehicleIds.has(vehicle.id) || !this.shifts.has(vehicle.a + "-" + vehicle.shiftId)) return this.addVehicle(vehicle);
         if (this.lastTrips.get(vehicle.id) !== vehicle.tripId) {
-            let pt = this.flush(this.vehicleIds.get(vehicle.id));
+            let pt = this.flush(this.vehicleIds.get(vehicle.id), vehicle.timestamp);
             this.vehicleIds.set(vehicle.id, vehicle.a + "-" + vehicle.shiftId);
             this.lastTrips.set(vehicle.id, vehicle.tripId);
             this.tripIds.set(vehicle.tripId, vehicle.a + "-" + vehicle.shiftId);
