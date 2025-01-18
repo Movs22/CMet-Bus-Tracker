@@ -24,7 +24,7 @@ const vehicleManager = {
             this.vehicleIds.set(vehicle.id, vehicle.a + "-" + vehicle.shiftId);
             this.lastTrips.set(vehicle.id, vehicle.tripId);
             this.tripIds.set(vehicle.tripId, vehicle.a + "-" + vehicle.shiftId);
-            let pos = vehicle.lat.toFixed(4) + "|" + vehicle.lon.toFixed(4) + "|" + vehicle.stopId + "|" + (vehicle.doors ? vehicle.doors === "OPEN" ? "1" : "0" : "-1") + "|0";
+            let pos = vehicle.lat.toFixed(4) + "|" + vehicle.lon.toFixed(4) + "|" + vehicle.stopId + "|" + (vehicle.doors ? vehicle.doors === "OPEN" ? "1" : "0" : "-1") + "|0@";
             const d = { id: vehicle.tripId, pattern: vehicle.pattern_id, start: vehicle.timestamp, pos: pos  };
             this.shifts.set(vehicle.a + "-" + vehicle.shiftId, { vehicleId: vehicle.id, start: vehicle.timestamp, finish: null, data: d });
         }
@@ -42,7 +42,7 @@ const vehicleManager = {
         }
         let data = this.shifts.get(vehicle.a + "-" + vehicle.shiftId).data;
         if(!data) return parentPort.postMessage({ type: 'log', data: "ERROR: " + vehicle.shiftId + " has an invalid start data:" + JSON.stringify(data) });
-        let pos = "@" + vehicle.lat.toFixed(5) + "|" + vehicle.lon.toFixed(5) + "|" + vehicle.stopId + "|" + (vehicle.doors ? vehicle.doors === "OPEN" ? "1" : "0" : "-1") + "|" + (vehicle.timestamp - data.start);
+        let pos = vehicle.lat.toFixed(5) + "|" + vehicle.lon.toFixed(5) + "|" + vehicle.stopId + "|" + (vehicle.doors ? vehicle.doors === "OPEN" ? "1" : "0" : "-1") + "|" + (vehicle.timestamp - data.start) + "@";
         data.pos += pos;
     },
 
@@ -62,14 +62,14 @@ const vehicleManager = {
         if(!fs.existsSync("./tripHistory/" + this.date + "/shifts")) fs.mkdirSync("./tripHistory/" + this.date + "/shifts");
         if(!fs.existsSync("./tripHistory/" + this.date + "/shift-trips")) fs.mkdirSync("./tripHistory/" + this.date + "/shift-trips");
         if(!fs.existsSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId)) {
-            fs.writeFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, shift.vehicleId + "<" + shift.start + "<§" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
+            fs.writeFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, shift.vehicleId + "<" + shift.start + "\n§" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
         } else {
-            fs.appendFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, "$" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
+            fs.appendFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, "\n$" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
         }
         if(!fs.existsSync("./tripHistory/" + this.date + "/shifts/" + shiftId)) {
             fs.writeFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, data.start + "-" + ts + "-" + data.id);
         } else {
-            fs.appendFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, data.start + "-" + ts + "-" + data.id);
+            fs.appendFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, "\n" + data.start + "-" + ts + "-" + data.id);
         }
         if(!fs.existsSync("./tripHistory/" + this.date + "/tripIds")) {
             fs.writeFileSync("./tripHistory/" + this.date + "/tripIds", data.id + ">" + shiftId);
