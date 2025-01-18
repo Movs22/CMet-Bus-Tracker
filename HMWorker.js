@@ -34,7 +34,7 @@ const vehicleManager = {
         if (!this.vehicleIds.has(vehicle.id) || !this.shifts.has(vehicle.a + "-" + vehicle.shiftId)) return this.addVehicle(vehicle);
         if (this.lastTrips.get(vehicle.id) !== vehicle.tripId) {
             let pt = this.flush(this.vehicleIds.get(vehicle.id));
-            this.vehicleIds.set(vehicle.id, vehicle.shiftId);
+            this.vehicleIds.set(vehicle.id, vehicle.a + "-" + vehicle.shiftId);
             this.lastTrips.set(vehicle.id, vehicle.tripId);
             this.tripIds.set(vehicle.tripId, vehicle.a + "-" + vehicle.shiftId);
             let data = { id: vehicle.tripId, pattern: vehicle.pattern_id, start: vehicle.timestamp, prevTrip: pt,  pos: [ ] };
