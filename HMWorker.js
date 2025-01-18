@@ -18,8 +18,8 @@ const vehicleManager = {
     },
 
     addVehicle(vehicle) {
-        if (this.shifts.has(vehicle.a + "-" + vehicle.shiftId)) return;
-        if (!this.vehicleIds.has(vehicle.id) && vehicle.shiftId) {
+        //if (this.shifts.has(vehicle.a + "-" + vehicle.shiftId)) return;
+        if (vehicle.shiftId) {
             if (vehicle.tripId === "UNAVAILABLE_SHIFT_ID") vehicle.tripId = vehicle.a + "-" + "UNAVAILABLE_SHIFT_ID-" + vehicle.id;
             this.vehicleIds.set(vehicle.id, vehicle.a + "-" + vehicle.shiftId);
             this.lastTrips.set(vehicle.id, vehicle.tripId);
