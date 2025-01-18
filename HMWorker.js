@@ -25,8 +25,8 @@ const vehicleManager = {
             this.lastTrips.set(vehicle.id, vehicle.tripId);
             this.tripIds.set(vehicle.tripId, vehicle.a + "-" + vehicle.shiftId);
             let pos = vehicle.lat.toFixed(4) + "|" + vehicle.lon.toFixed(4) + "|" + vehicle.stopId + "|" + (vehicle.doors ? vehicle.doors === "OPEN" ? "1" : "0" : "-1") + "|0@";
-            const d = { id: vehicle.tripId, pattern: vehicle.pattern_id, start: (Math.round(Date.now()/1000) - data.start), pos: pos  };
-            this.shifts.set(vehicle.a + "-" + vehicle.shiftId, { vehicleId: vehicle.id, start: (Math.round(Date.now()/1000) - data.start), finish: null, data: d });
+            const d = { id: vehicle.tripId, pattern: vehicle.pattern_id, start: (Math.round(Date.now()/1000)), pos: pos  };
+            this.shifts.set(vehicle.a + "-" + vehicle.shiftId, { vehicleId: vehicle.id, start: (Math.round(Date.now()/1000)), finish: null, data: d });
         }
     },
 
@@ -37,8 +37,8 @@ const vehicleManager = {
             this.vehicleIds.set(vehicle.id, vehicle.a + "-" + vehicle.shiftId);
             this.lastTrips.set(vehicle.id, vehicle.tripId);
             this.tripIds.set(vehicle.tripId, vehicle.a + "-" + vehicle.shiftId);
-            let data = { id: vehicle.tripId, pattern: vehicle.pattern_id, start: (Math.round(Date.now()/1000) - data.start), prevTrip: pt,  pos: [ ] };
-            this.shifts.set(vehicle.a + "-" + vehicle.shiftId, { vehicleId: vehicle.id, start: (Math.round(Date.now()/1000) - data.start), finish: null, data: data });
+            let data = { id: vehicle.tripId, pattern: vehicle.pattern_id, start: (Math.round(Date.now()/1000)), prevTrip: pt,  pos: [ ] };
+            this.shifts.set(vehicle.a + "-" + vehicle.shiftId, { vehicleId: vehicle.id, start: (Math.round(Date.now()/1000)), finish: null, data: data });
         }
         let data = this.shifts.get(vehicle.a + "-" + vehicle.shiftId).data;
         if(!data) return parentPort.postMessage({ type: 'log', data: "ERROR: " + vehicle.shiftId + " has an invalid start data:" + JSON.stringify(data) });
