@@ -5,8 +5,8 @@ const fs = require("fs")
 
 let date;
 
-module.exports = (date, hm) => {
-    this.date = date;
+module.exports = (d, hm) => {
+    date = d;
     router.use(cors({
         origin: '*',
         methods: ['GET', 'POST'],
@@ -55,6 +55,6 @@ module.exports = (date, hm) => {
 };
 
 function parse(d) {
-    if(d === "now") return this.date;
+    if(d === "now") return date;
     return d
 }
