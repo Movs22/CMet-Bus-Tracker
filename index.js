@@ -73,7 +73,7 @@ CMetropolitana.vehicles.on("vehicleUpdate", (oldVec, newVec) => {
     if (newVec.timestamp - now > -15000) {
         HM.addUpdate(vehicles[newVec.id]);
     } else if(newVec.shiftId) {
-        HM.flush(newVec.a + "-" + vehicles[newVec.id].shiftId);
+        HM.flush(newVec.a + "-" + vehicles[newVec.id].shiftId, newVec.timestamp);
     }
 })
 

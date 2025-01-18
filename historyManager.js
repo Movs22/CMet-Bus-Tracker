@@ -29,8 +29,8 @@ class historyManager {
         this.worker.postMessage({ type: 'test' });
     }
 
-    flush(shiftId) {
-        this.worker.postMessage({ type: 'flush', shiftId });
+    flush(shiftId, ts) {
+        this.worker.postMessage({ type: 'flush', shiftId, ts });
     }
 
     getShifts() {

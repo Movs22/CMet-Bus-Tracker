@@ -50,7 +50,7 @@ const vehicleManager = {
         return Array.from(this.shifts.values());
     },
 
-    flush(shiftId) {
+    flush(shiftId, ts) {
         parentPort.postMessage({ type: 'log', data: "FLUSHING " + shiftId });
         let shift = this.shifts.get(shiftId);
         if(!shift) return parentPort.postMessage({ type: 'log', data: "ERROR: " + shiftId + " is unknown?" });
@@ -62,14 +62,14 @@ const vehicleManager = {
         if(!fs.existsSync("./tripHistory/" + this.date + "/shifts")) fs.mkdirSync("./tripHistory/" + this.date + "/shifts");
         if(!fs.existsSync("./tripHistory/" + this.date + "/shift-trips")) fs.mkdirSync("./tripHistory/" + this.date + "/shift-trips");
         if(!fs.existsSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId)) {
-            fs.writeFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, shift.vehicleId + "<" + shift.start + "<§" + data.id + "<" + data.pattern + "<" + data.start + "<" + data.pos);
+            fs.writeFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, shift.vehicleId + "<" + shift.start + "<§" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
         } else {
-            fs.appendFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, "$" + data.id + "<" + data.pattern + "<" + data.start + "<" + data.pos);
+            fs.appendFileSync("./tripHistory/" + this.date + "/shift-trips/" + shiftId, "$" + data.id + "<" + data.pattern + "<" + data.start + "<" + ts + "<" + data.pos);
         }
         if(!fs.existsSync("./tripHistory/" + this.date + "/shifts/" + shiftId)) {
-            fs.writeFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, data.id);
+            fs.writeFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, data.start + "-" + ts + "-" + data.id);
         } else {
-            fs.appendFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, "$" + data.id);
+            fs.appendFileSync("./tripHistory/" + this.date + "/shifts/" + shiftId, data.start + "-" + ts + "-" + data.id);
         }
         if(!fs.existsSync("./tripHistory/" + this.date + "/tripIds")) {
             fs.writeFileSync("./tripHistory/" + this.date + "/tripIds", data.id + ">" + shiftId);
@@ -87,7 +87,7 @@ const vehicleManager = {
 
     flushAll() {
         this.shifts.forEach((shift, _) => {
-            this.flush(shift);
+            this.flush(shift, Math.floor(Date.now() / 1000));
         })
     },
 
@@ -100,7 +100,7 @@ parentPort.on('message', (msg) => {
     if (msg.type === 'addVehicle') vehicleManager.addVehicle(msg.vehicle);
     else if (msg.type === 'addUpdate') vehicleManager.addUpdate(msg.vehicle);
     else if (msg.type === 'test') parentPort.postMessage({ type: 'test', data: vehicleManager.test() });
-    else if (msg.type === 'flush') vehicleManager.flush(msg.shiftId);
+    else if (msg.type === 'flush') vehicleManager.flush(msg.shiftId, msg.ts);
     else if (msg.type === 'shifts') vehicleManager.getShifts();
     else if (msg.type === 'flushAll') vehicleManager.flushAll();
     else if (msg.type === 'init') vehicleManager.init(msg.date);
